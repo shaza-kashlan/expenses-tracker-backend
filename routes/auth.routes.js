@@ -15,7 +15,6 @@ router.post("/signup", async (req, res, next) => {
   }
 
   // Validate emailAddress format and password format...
-
   try {
     const foundUser = await User.findOne({ emailAddress });
     if (foundUser) {
@@ -72,19 +71,43 @@ router.post("/login", async (req, res) => {
       } else {
         const { _id, userName } = foundUser;
         const payload = { _id, userName };
-        const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
+
+        const accessToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
+          expiresIn: "1m",
           algorithm: "HS256",
-          expiresIn: "2m",
         });
+        const refreshToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
+          expiresIn: "2m",
+          algorithm: "HS256",
+        });
+
         res.status(200).json({
           message: "You successfully logged in",
-          authToken,
+          accessToken,
+          refreshToken,
         });
       }
     }
   } catch (err) {
     console.log("error when logging in", err);
     res.status(500).json({ err });
+  }
+});
+
+// refresh access token
+router.post("/refresh", isAuthenticated, (req, res) => {
+  try {
+    console.log("\n \n inside refresh \n\n", req.payload);
+    const { _id, userName } = req.payload;
+
+    const newToken = jwt.sign({ _id, userName }, process.env.TOKEN_SECRET, {
+      algorithm: "HS256",
+      expiresIn: "1m",
+    });
+
+    return res.status(200).json({ token: newToken });
+  } catch (error) {
+    return res.status(400).send("Invalid refresh token.");
   }
 });
 
