@@ -5,11 +5,11 @@ const { isAuthenticated } = require("../middleware/jwt.middleware");
 const FAKE_USER_ID = { _id: "660d205410464d8fa79a3fef" };
 
 router.get("/", isAuthenticated, async (req, res, next) => {
-	const { _id: user_id } = req.payload || FAKE_USER_ID;
+	const { _id: user_id } = req.payload;
 
 	try {
 		const expenses = await Expense.find({
-			$or: [{ created_by_user_id: user_id }, { public: true }],
+			created_by_user_id: user_id,
 		});
 		res.status(200).json(expenses);
 	} catch (err) {
@@ -19,9 +19,9 @@ router.get("/", isAuthenticated, async (req, res, next) => {
 });
 
 router.post("/", isAuthenticated, async (req, res, next) => {
-	const { _id: user_id } = req.payload || FAKE_USER_ID;
+	const { _id: user_id } = req.payload;
 	const newExpenseBody = req.body;
-	newExpenseBody.created_by_user_id = user_id || FAKE_USER_ID;
+	newExpenseBody.created_by_user_id = user_id;
 
 	// TODO: handle create icon if included, create mappings if included
 	try {
@@ -52,14 +52,12 @@ router.post("/", isAuthenticated, async (req, res, next) => {
 });
 
 router.get("/:expenseId", isAuthenticated, async (req, res, next) => {
-	const { _id: user_id } = req.payload || FAKE_USER_ID;
+	const { _id: user_id } = req.payload;
 	const { expenseId } = req.params;
 	const { include_parents } = req.query;
 
 	try {
-		const expense = await Expense.findById(expenseId).populate(
-			include_parents === "true" ? "parent_expense" : "",
-		);
+		const expense = await Expense.findById(expenseId);
 		if (!expense) {
 			res
 				.status(404)
@@ -93,7 +91,7 @@ router.get("/:expenseId", isAuthenticated, async (req, res, next) => {
 });
 
 router.put("/:expenseId", isAuthenticated, async (req, res, next) => {
-	const { _id: user_id } = req.payload || FAKE_USER_ID;
+	const { _id: user_id } = req.payload;
 	const { expenseId } = req.params;
 	const updatedVersion = req.body;
 
