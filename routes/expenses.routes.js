@@ -1,11 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const Expense = require("../models/Expense.model");
+const { isAuthenticated } = require("../middleware/jwt.middleware");
 const FAKE_USER_ID = { _id: "660d205410464d8fa79a3fef" };
 
 // TODO: add auth middleware when available
 
-router.get("/", async (req, res, next) => {
+router.get("/", isAuthenticated, async (req, res, next) => {
 	const { _id: user_id } = req.payload || FAKE_USER_ID;
 
 	try {
@@ -19,7 +20,7 @@ router.get("/", async (req, res, next) => {
 	}
 });
 
-router.post("/", async (req, res, next) => {
+router.post("/", isAuthenticated, async (req, res, next) => {
 	const { _id: user_id } = req.payload || FAKE_USER_ID;
 	const newExpenseBody = req.body;
 	newExpenseBody.created_by_user_id = user_id || FAKE_USER_ID;
@@ -52,7 +53,7 @@ router.post("/", async (req, res, next) => {
 	}
 });
 
-router.get("/:expenseId", async (req, res, next) => {
+router.get("/:expenseId", isAuthenticated, async (req, res, next) => {
 	const { _id: user_id } = req.payload || FAKE_USER_ID;
 	const { expenseId } = req.params;
 	const { include_parents } = req.query;
@@ -94,7 +95,7 @@ router.get("/:expenseId", async (req, res, next) => {
 	}
 });
 
-router.put("/:expenseId", async (req, res, next) => {
+router.put("/:expenseId", isAuthenticated, async (req, res, next) => {
 	const { _id: user_id } = req.payload || FAKE_USER_ID;
 	const { expenseId } = req.params;
 	const updatedVersion = req.body;
@@ -121,7 +122,7 @@ router.put("/:expenseId", async (req, res, next) => {
 			updatedVersion,
 			{ new: true },
 		);
-		res.status(201).json(updatedExpense);
+		res.status(200).json(updatedExpense);
 		return;
 	} catch (err) {
 		if (
@@ -147,7 +148,7 @@ router.put("/:expenseId", async (req, res, next) => {
 	}
 });
 
-router.delete("/:expenseId", async (req, res, next) => {
+router.delete("/:expenseId", isAuthenticated, async (req, res, next) => {
 	const { _id: user_id } = req.payload || FAKE_USER_ID;
 	const { expenseId } = req.params;
 
