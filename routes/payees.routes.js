@@ -1,12 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const Payee = require("../models/Payee.model");
-const FAKE_USER_ID = { _id: "660d205410464d8fa79a3fef" };
+const { isAuthenticated } = require("../middleware/jwt.middleware");
 
 // TODO: add auth middleware when available
 
-router.get("/", async (req, res, next) => {
-	const { _id: user_id } = req.payload || FAKE_USER_ID;
+router.get("/", isAuthenticated, async (req, res, next) => {
+	const { _id: user_id } = req.payload;
 
 	try {
 		const payees = await Payee.find({
@@ -19,10 +19,10 @@ router.get("/", async (req, res, next) => {
 	}
 });
 
-router.post("/", async (req, res, next) => {
-	const { _id: user_id } = req.payload || FAKE_USER_ID;
+router.post("/", isAuthenticated, async (req, res, next) => {
+	const { _id: user_id } = req.payload;
 	const newPayeeBody = req.body;
-	newPayeeBody.created_by_user_id = user_id || FAKE_USER_ID;
+	newPayeeBody.created_by_user_id = user_id;
 
 	// TODO: handle create icon if included, create mappings if included
 	try {
@@ -52,8 +52,8 @@ router.post("/", async (req, res, next) => {
 	}
 });
 
-router.get("/:payeeId", async (req, res, next) => {
-	const { _id: user_id } = req.payload || FAKE_USER_ID;
+router.get("/:payeeId", isAuthenticated, async (req, res, next) => {
+	const { _id: user_id } = req.payload;
 	const { payeeId } = req.params;
 
 	try {
@@ -64,13 +64,11 @@ router.get("/:payeeId", async (req, res, next) => {
 				.json({ code: 404, message: "could not find a payee with that ID" });
 			return;
 		}
-		if (payee.created_by_user_id.toString() !== user_id) {
-			console.log("testing", payee.created_by_user_id.toString() !== user_id);
-			console.log("payee", payee.created_by_user_id.toString());
-			console.log("userid", user_id);
+		if (payee.created_by_user_id.toString() !== user_id && !payee.public) {
+			// leaving this separate in case we want to change it to an unauthenticated error later
 			res
-				.status(401)
-				.json({ code: 401, message: "you do not have the autharata" });
+				.status(404)
+				.json({ code: 404, message: "could not find a payee with that ID" });
 			return;
 		}
 
@@ -91,8 +89,8 @@ router.get("/:payeeId", async (req, res, next) => {
 	}
 });
 
-router.put("/:payeeId", async (req, res, next) => {
-	const { _id: user_id } = req.payload || FAKE_USER_ID;
+router.put("/:payeeId", isAuthenticated, async (req, res, next) => {
+	const { _id: user_id } = req.payload;
 	const { payeeId } = req.params;
 	const updatedVersion = req.body;
 
@@ -106,9 +104,10 @@ router.put("/:payeeId", async (req, res, next) => {
 		}
 
 		if (payee.created_by_user_id.toString() !== user_id) {
+			// leaving this separate in case we want to change it to an unauthenticated error later
 			res
-				.status(401)
-				.json({ code: 401, message: "you do not have the autharata" });
+				.status(404)
+				.json({ code: 404, message: "could not find a payee with that ID" });
 			return;
 		}
 		// TODO: handle required fields and other issues that would cause a 400 error because mongoose does not
@@ -144,8 +143,8 @@ router.put("/:payeeId", async (req, res, next) => {
 	}
 });
 
-router.delete("/:payeeId", async (req, res, next) => {
-	const { _id: user_id } = req.payload || FAKE_USER_ID;
+router.delete("/:payeeId", isAuthenticated, async (req, res, next) => {
+	const { _id: user_id } = req.payload;
 	const { payeeId } = req.params;
 
 	try {
@@ -156,10 +155,11 @@ router.delete("/:payeeId", async (req, res, next) => {
 				.json({ code: 404, message: "could not find a payee with that ID" });
 			return;
 		}
-		if (payee.created_by_user_id.toString() !== user_id && !payee.public) {
+		if (payee.created_by_user_id.toString() !== user_id) {
+			// leaving this separate in case we want to change it to an unauthenticated error later
 			res
-				.status(401)
-				.json({ code: 401, message: "you do not have the autharata" });
+				.status(404)
+				.json({ code: 404, message: "could not find a payee with that ID" });
 			return;
 		}
 		const deletedPayee = await Payee.findByIdAndDelete(payeeId);
