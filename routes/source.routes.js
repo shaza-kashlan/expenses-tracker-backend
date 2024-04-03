@@ -120,8 +120,9 @@ router.put("/:sourceId", async (req, res, next) => {
 		res.status(201).json(updatedSource);
 		return;
 	} catch (err) {
+		console.error("error in update source by ID", err);
 		if (
-			err.reason.toString() ===
+			err?.reason?.toString() ===
 			"BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer"
 		) {
 			res
@@ -129,7 +130,15 @@ router.put("/:sourceId", async (req, res, next) => {
 				.json({ code: 404, message: "could not find a source with that ID" });
 			return;
 		}
-		console.error("error in update source by ID", err);
+		if (err.toString().includes("E11000 duplicate key error")) {
+			res.status(400).json({
+				code: 400,
+				reason: "duplicate_key",
+				message:
+					"there is already a source with that name, please try again with something a little more unique",
+			});
+			return;
+		}
 		next(err);
 	}
 });
