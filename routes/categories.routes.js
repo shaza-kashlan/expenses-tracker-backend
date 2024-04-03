@@ -101,7 +101,7 @@ router.get("/:categoryId", isAuthenticated, async (req, res, next) => {
   }
 });
 
-router.put("/:categoryId", async (req, res, next) => {
+router.put("/:categoryId", isAuthenticated, async (req, res, next) => {
   const { _id: user_id } = req.payload || FAKE_USER_ID;
   const { categoryId } = req.params;
   const updatedVersion = req.body;
@@ -154,7 +154,7 @@ router.put("/:categoryId", async (req, res, next) => {
   }
 });
 
-router.delete("/:categoryId", async (req, res, next) => {
+router.delete("/:categoryId", isAuthenticated, async (req, res, next) => {
   const { _id: user_id } = req.payload || FAKE_USER_ID;
   const { categoryId } = req.params;
 
@@ -166,10 +166,7 @@ router.delete("/:categoryId", async (req, res, next) => {
         .json({ code: 404, message: "could not find a category with that ID" });
       return;
     }
-    if (
-      category.created_by_user_id.toString() !== user_id &&
-      !category.public
-    ) {
+    if (category.created_by_user_id.toString() !== user_id) {
       res
         .status(401)
         .json({ code: 401, message: "you do not have the autharata" });
