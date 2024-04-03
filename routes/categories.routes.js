@@ -121,6 +121,7 @@ router.put("/:categoryId", isAuthenticated, async (req, res, next) => {
         .json({ code: 401, message: "you do not have the autharata" });
       return;
     }
+
     // TODO: handle required fields and other issues that would cause a 400 error because mongoose does not
     // for example, changing the name to something that already exists
     const updatedCategory = await Category.findByIdAndUpdate(
