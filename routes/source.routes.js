@@ -146,7 +146,7 @@ router.delete("/:sourceId", async (req, res, next) => {
 				.json({ code: 404, message: "could not find a source with that ID" });
 			return;
 		}
-		if (source.created_by_user_id !== user_id && !source.public) {
+		if (source.created_by_user_id.toString() !== user_id && !source.public) {
 			res
 				.status(401)
 				.json({ code: 401, message: "you do not have the autharata" });
