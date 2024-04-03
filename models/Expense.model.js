@@ -7,7 +7,7 @@ const expenseSchema = new Schema({
     required: [true, "description is required."],
   },
   amount: {
-    type: Integer,
+    type: Number,
     // or Number
     required: [true, "amount is required."],
   },

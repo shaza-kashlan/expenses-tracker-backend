@@ -1,4 +1,5 @@
-import { Schema, model } from "mongoose";
+const { Schema, model } = require("mongoose");
+const Address = require("./Address.model");
 
 // TODO: Please make sure you edit the User model to whatever makes sense in this case
 const userSchema = new Schema(
@@ -25,7 +26,7 @@ const userSchema = new Schema(
 		address: {
 			type: Schema.Types.ObjectId,
 			ref: "UserAddress",
-			//add default value to address
+			default: new Address(),
 		},
 		image: {
 			type: String,
