@@ -1,12 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const Source = require("../models/Source.model");
+const { isAuthenticated } = require("../middleware/jwt.middleware");
 const FAKE_USER_ID = { _id: "660d205410464d8fa79a3fef" };
 
-// TODO: add auth middleware when available
-
-router.get("/", async (req, res, next) => {
-	const { _id: user_id } = req.payload || FAKE_USER_ID;
+router.get("/", isAuthenticated, async (req, res, next) => {
+	const { _id: user_id } = req.payload;
 
 	try {
 		const sources = await Source.find({
@@ -19,10 +18,10 @@ router.get("/", async (req, res, next) => {
 	}
 });
 
-router.post("/", async (req, res, next) => {
-	const { _id: user_id } = req.payload || FAKE_USER_ID;
+router.post("/", isAuthenticated, async (req, res, next) => {
+	const { _id: user_id } = req.payload;
 	const newSourceBody = req.body;
-	newSourceBody.created_by_user_id = user_id || FAKE_USER_ID;
+	newSourceBody.created_by_user_id = user_id;
 
 	// TODO: handle create icon if included, create mappings if included
 	try {
@@ -52,8 +51,8 @@ router.post("/", async (req, res, next) => {
 	}
 });
 
-router.get("/:sourceId", async (req, res, next) => {
-	const { _id: user_id } = req.payload || FAKE_USER_ID;
+router.get("/:sourceId", isAuthenticated, async (req, res, next) => {
+	const { _id: user_id } = req.payload;
 	const { sourceId } = req.params;
 
 	try {
@@ -64,13 +63,11 @@ router.get("/:sourceId", async (req, res, next) => {
 				.json({ code: 404, message: "could not find a source with that ID" });
 			return;
 		}
-		if (source.created_by_user_id.toString() !== user_id) {
-			console.log("testing", source.created_by_user_id.toString() !== user_id);
-			console.log("source", source.created_by_user_id.toString());
-			console.log("userid", user_id);
+		if (source.created_by_user_id.toString() !== user_id && !source.public) {
+			// leaving this as separate in case we want to change auth error later
 			res
-				.status(401)
-				.json({ code: 401, message: "you do not have the autharata" });
+				.status(404)
+				.json({ code: 404, message: "could not find a source with that ID" });
 			return;
 		}
 
@@ -91,8 +88,8 @@ router.get("/:sourceId", async (req, res, next) => {
 	}
 });
 
-router.put("/:sourceId", async (req, res, next) => {
-	const { _id: user_id } = req.payload || FAKE_USER_ID;
+router.put("/:sourceId", isAuthenticated, async (req, res, next) => {
+	const { _id: user_id } = req.payload;
 	const { sourceId } = req.params;
 	const updatedVersion = req.body;
 
@@ -106,8 +103,8 @@ router.put("/:sourceId", async (req, res, next) => {
 		}
 		if (source.created_by_user_id.toString() !== user_id) {
 			res
-				.status(401)
-				.json({ code: 401, message: "you do not have the autharata" });
+				.status(404)
+				.json({ code: 404, message: "could not find a source with that ID" });
 			return;
 		}
 		// TODO: handle required fields and other issues that would cause a 400 error because mongoose does not
@@ -143,8 +140,8 @@ router.put("/:sourceId", async (req, res, next) => {
 	}
 });
 
-router.delete("/:sourceId", async (req, res, next) => {
-	const { _id: user_id } = req.payload || FAKE_USER_ID;
+router.delete("/:sourceId", isAuthenticated, async (req, res, next) => {
+	const { _id: user_id } = req.payload;
 	const { sourceId } = req.params;
 
 	try {
@@ -155,10 +152,12 @@ router.delete("/:sourceId", async (req, res, next) => {
 				.json({ code: 404, message: "could not find a source with that ID" });
 			return;
 		}
+
 		if (source.created_by_user_id.toString() !== user_id && !source.public) {
+			// leaving this as separate in case we want to change auth error later
 			res
-				.status(401)
-				.json({ code: 401, message: "you do not have the autharata" });
+				.status(404)
+				.json({ code: 404, message: "could not find a source with that ID" });
 			return;
 		}
 		const deletedSource = await Source.findByIdAndDelete(sourceId);
