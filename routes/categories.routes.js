@@ -2,12 +2,11 @@ const express = require("express");
 const router = express.Router();
 const Category = require("../models/Category.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
-const FAKE_USER_ID = { _id: "660d205410464d8fa79a3fef" };
 
 // TODO: add auth middleware when available
 
 router.get("/", isAuthenticated, async (req, res, next) => {
-  const { _id: user_id } = req.payload || FAKE_USER_ID;
+  const { _id: user_id } = req.payload;
   const { include_parents } = req.query;
 
   try {
