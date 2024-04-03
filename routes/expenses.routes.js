@@ -4,8 +4,6 @@ const Expense = require("../models/Expense.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 const FAKE_USER_ID = { _id: "660d205410464d8fa79a3fef" };
 
-// TODO: add auth middleware when available
-
 router.get("/", isAuthenticated, async (req, res, next) => {
 	const { _id: user_id } = req.payload || FAKE_USER_ID;
 
@@ -69,12 +67,11 @@ router.get("/:expenseId", isAuthenticated, async (req, res, next) => {
 			return;
 		}
 		if (expense.created_by_user_id.toString() !== user_id) {
-			console.log("testing", expense.created_by_user_id.toString() !== user_id);
-			console.log("expense", expense.created_by_user_id.toString());
-			console.log("userid", user_id);
+			// just keeping this separate in case we want to change to unauthorized later
+			// but it should be good like this for now
 			res
-				.status(401)
-				.json({ code: 401, message: "you do not have the autharata" });
+				.status(404)
+				.json({ code: 404, message: "could not find a expense with that ID" });
 			return;
 		}
 
@@ -110,9 +107,11 @@ router.put("/:expenseId", isAuthenticated, async (req, res, next) => {
 		}
 
 		if (expense.created_by_user_id.toString() !== user_id) {
+			// just keeping this separate in case we want to change to unauthorized later
+			// but it should be good like this for now
 			res
-				.status(401)
-				.json({ code: 401, message: "you do not have the autharata" });
+				.status(404)
+				.json({ code: 404, message: "could not find a expense with that ID" });
 			return;
 		}
 		// TODO: handle required fields and other issues that would cause a 400 error because mongoose does not
@@ -161,9 +160,11 @@ router.delete("/:expenseId", isAuthenticated, async (req, res, next) => {
 			return;
 		}
 		if (expense.created_by_user_id.toString() !== user_id && !expense.public) {
+			// just keeping this separate in case we want to change to unauthorized later
+			// but it should be good like this for now
 			res
-				.status(401)
-				.json({ code: 401, message: "you do not have the autharata" });
+				.status(404)
+				.json({ code: 404, message: "could not find a expense with that ID" });
 			return;
 		}
 		const deletedExpense = await Expense.findByIdAndDelete(expenseId);
