@@ -3,7 +3,7 @@ import { Schema, model } from "mongoose";
 // TODO: Please make sure you edit the User model to whatever makes sense in this case
 const userSchema = new Schema(
 	{
-		email: {
+		emailAddress: {
 			type: String,
 			required: [true, "Email is required."],
 			unique: true,
@@ -13,6 +13,23 @@ const userSchema = new Schema(
 		password: {
 			type: String,
 			required: [true, "Password is required."],
+		},
+		userName: {
+			type: String,
+			required: [true, "UserName is required."],
+		},
+		fullName: {
+			type: String,
+			default: "",
+		},
+		address: {
+			type: Schema.Types.ObjectId,
+			ref: "UserAddress",
+			//add default value to address
+		},
+		image: {
+			type: String,
+			default: "",
 		},
 	},
 	{
