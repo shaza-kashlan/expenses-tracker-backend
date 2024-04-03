@@ -153,7 +153,7 @@ router.delete("/:sourceId", isAuthenticated, async (req, res, next) => {
 			return;
 		}
 
-		if (source.created_by_user_id.toString() !== user_id && !source.public) {
+		if (source.created_by_user_id.toString() !== user_id) {
 			// leaving this as separate in case we want to change auth error later
 			res
 				.status(404)
