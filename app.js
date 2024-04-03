@@ -18,6 +18,12 @@ require("./config")(app);
 const indexRoutes = require("./routes/index.routes");
 app.use("/api", indexRoutes);
 
+const authRoutes = require("./routes/auth.routes");
+app.use("/users", authRoutes);
+
+const expenseRoutes = require("./routes/expense.routes");
+app.use("/expenses", expenseRoutes);
+
 const categoryRoutes = require("./routes/categories.routes");
 app.use("/categories", categoryRoutes);
 
