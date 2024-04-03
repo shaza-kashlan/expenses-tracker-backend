@@ -159,7 +159,7 @@ router.delete("/:expenseId", isAuthenticated, async (req, res, next) => {
 				.json({ code: 404, message: "could not find a expense with that ID" });
 			return;
 		}
-		if (expense.created_by_user_id.toString() !== user_id && !expense.public) {
+		if (expense.created_by_user_id.toString() !== user_id) {
 			// just keeping this separate in case we want to change to unauthorized later
 			// but it should be good like this for now
 			res
