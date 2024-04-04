@@ -51,10 +51,9 @@ const csvToExpense = (
 			if (key === "amount") {
 				let amount = element[mapping[key]];
 				if (number_style === "german") {
-					amount = amount.replace(".", "");
+					amount = amount.replace(".", "").replace(",", ".");
 				}
 				amount = amount
-					.replace(",", ".")
 					.replace("+", "")
 					.replace("€", "")
 					.replaceAll('"', "")
