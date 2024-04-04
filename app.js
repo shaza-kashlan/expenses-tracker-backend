@@ -18,8 +18,9 @@ require("./config")(app);
 const indexRoutes = require("./routes/index.routes");
 app.use("/api", indexRoutes);
 
-const payeeRoutes = require("./routes/payees.routes");
-app.use("/payees", payeeRoutes);
+//Source routes
+const sourceRouter = require("./routes/source.routes");
+app.use("/sources", sourceRouter);
 
 const authRoutes = require("./routes/auth.routes");
 app.use("/users", authRoutes);

@@ -1,11 +1,9 @@
 const { Schema, model } = require("mongoose");
 
-const mappingSchema = new Schema(
+const patternSchema = new Schema(
 	{
-		date: String,
-		description: String,
-		notes: String,
-		amount: String,
+		field: String,
+		pattern: String,
 		created_by_user_id: { type: Schema.Types.ObjectId, ref: "User" },
 	},
 	{
@@ -14,6 +12,6 @@ const mappingSchema = new Schema(
 	},
 );
 
-const Mapping = model("Mapping", mappingSchema);
+const Pattern = model("Pattern", patternSchema);
 
-module.exports = Mapping;
+module.exports = Pattern;
