@@ -1,5 +1,15 @@
 const { expressjwt: jwt } = require("express-jwt");
 
+class AuthError extends Error {
+	constructor(message, statusCode) {
+		super(message);
+		this.statusCode = statusCode;
+		this.status = statusCode;
+		this.isOperational = true;
+		Error.captureStackTrace(this, this.constructor);
+	}
+}
+
 function getTokenFromHeaders(req, res, next) {
 	console.log("\n\ntoken autorize\n\n");
 	// Check if the token is available on the request Headers
