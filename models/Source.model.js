@@ -21,6 +21,7 @@ const sourceSchema = new Schema(
 			required: [true, "Format is required."],
 		},
 		separator: { type: String, default: "," },
+		number_style: { type: String, default: "normal" },
 		icon: {
 			type: Schema.Types.ObjectId,
 			ref: "Icon",

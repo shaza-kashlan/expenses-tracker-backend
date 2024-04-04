@@ -235,7 +235,7 @@ router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 		}
 		// TODO: handle required fields and other issues that would cause a 400 error because mongoose does not
 		// for example, changing the name to something that already exists
-		const { separator, mapping, type } = source._doc;
+		const { separator, mapping, type, number_style } = source._doc;
 		// console.log({
 		// 	separator: separator.toString(),
 		// 	mapping: mapping,
@@ -253,6 +253,7 @@ router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 				payee: mapping.payee,
 			},
 			type.toString(),
+			number_style,
 		);
 		console.log(myConvertedExpenses);
 		if (myConvertedExpenses == null) {

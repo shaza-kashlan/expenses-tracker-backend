@@ -29,6 +29,7 @@ const csvToExpense = (
 	separator = ",",
 	mapping = {},
 	type = "cash",
+	number_style = "normal",
 ) => {
 	if (!user_id) {
 		console.error("no user id provided for import");
@@ -48,12 +49,17 @@ const csvToExpense = (
 				continue;
 			}
 			if (key === "amount") {
-				newObj[key] = element[mapping[key]]
+				let amount = element[mapping[key]];
+				if (number_style === "german") {
+					amount = amount.replace(".", "");
+				}
+				amount = amount
 					.replace(",", ".")
 					.replace("+", "")
 					.replace("€", "")
 					.replaceAll('"', "")
 					.trim();
+				newObj[key] = amount;
 			} else {
 				newObj[key] = element[mapping[key]];
 			}
