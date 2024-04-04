@@ -13,6 +13,7 @@ function notFoundHandler(req, res, next) {
 	res.status(404).json({ message: "This route does not exist." });
 }
 
+
 function isAuthenticatedWithErrorHandler(err, req, res, next) {
 	if (err && err.name === "UnauthorizedError") {
 		// Token expired, return a 401 Unauthorized error

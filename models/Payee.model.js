@@ -5,7 +5,6 @@ const payeeSchema = new Schema(
 		name: {
 			type: String,
 			required: [true, "Name is required."],
-			lowercase: true,
 			trim: true,
 		},
 		default_category: {
@@ -17,7 +16,7 @@ const payeeSchema = new Schema(
 			ref: "Icon",
 		},
 		public: { type: Boolean, default: true },
-		patterns: { type: [Schema.Types.ObjectId], ref: "Pattern" },
+		patterns: [{ type: [Schema.Types.ObjectId], ref: "Pattern" }],
 		created_by_user_id: { type: Schema.Types.ObjectId, ref: "User" },
 	},
 	{
@@ -25,6 +24,13 @@ const payeeSchema = new Schema(
 		timestamps: true,
 	},
 );
+
+
+payeeSchema.methods.toJSON = function () {
+	const { created_by_user_id, ...payeeToReturn } = this._doc;
+
+	return payeeToReturn;
+};
 
 const Payee = model("Payee", payeeSchema);
 
