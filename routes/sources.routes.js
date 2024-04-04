@@ -227,13 +227,6 @@ router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 				.json({ code: 404, message: "could not find a source with that ID" });
 			return;
 		}
-		if (source.created_by_user_id.toString() !== user_id && source.public) {
-			// leaving this separate in case we want to change it to an unauthenticated error later
-			res
-				.status(401)
-				.json({ code: 401, message: "you do not have the authorata" });
-			return;
-		}
 		if (source.created_by_user_id.toString() !== user_id && !source.public) {
 			res
 				.status(404)
@@ -249,6 +242,7 @@ router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 		// 	type: type.toString(),
 		// });
 		const myConvertedExpenses = csvToExpense(
+			user_id,
 			csvToImport,
 			separator.toString(),
 			{
@@ -259,7 +253,6 @@ router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 				payee: mapping.payee,
 			},
 			type.toString(),
-			user_id,
 		);
 		console.log(myConvertedExpenses);
 		if (myConvertedExpenses == null) {
@@ -268,7 +261,7 @@ router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 				.json({ code: 500, message: "an error ocurred on import" });
 		}
 		const insertedExpenses = await Expense.insertMany(myConvertedExpenses);
-		console.log("after insert", insertedExpenses);
+		//console.log("after insert", insertedExpenses);
 		const imported_expenses = insertedExpenses.length;
 		res.status(200).json({ status: "success", imported_expenses });
 		return;

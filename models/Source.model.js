@@ -20,7 +20,7 @@ const sourceSchema = new Schema(
 			enum: ["csv", "tsv", "text", "md", "json"],
 			required: [true, "Format is required."],
 		},
-		separator: String,
+		separator: { type: String, default: "," },
 		icon: {
 			type: Schema.Types.ObjectId,
 			ref: "Icon",
