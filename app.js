@@ -18,14 +18,11 @@ require("./config")(app);
 const indexRoutes = require("./routes/index.routes");
 app.use("/api", indexRoutes);
 
+const payeeRoutes = require("./routes/payees.routes");
+app.use("/payees", payeeRoutes);
+
 const authRoutes = require("./routes/auth.routes");
 app.use("/users", authRoutes);
-
-const expenseRoutes = require("./routes/expense.routes");
-app.use("/expenses", expenseRoutes);
-
-const categoryRoutes = require("./routes/categories.routes");
-app.use("/categories", categoryRoutes);
 
 // ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
 require("./error-handling")(app);
