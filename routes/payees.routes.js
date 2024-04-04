@@ -103,7 +103,15 @@ router.put("/:payeeId", isAuthenticated, async (req, res, next) => {
 			return;
 		}
 
-		if (payee.created_by_user_id.toString() !== user_id) {
+		if (payee.created_by_user_id.toString() !== user_id && payee.public) {
+			// leaving this separate in case we want to change it to an unauthenticated error later
+			res
+				.status(401)
+				.json({ code: 401, message: "you do not have the authorata" });
+			return;
+		}
+
+		if (payee.created_by_user_id.toString() !== user_id && !payee.public) {
 			// leaving this separate in case we want to change it to an unauthenticated error later
 			res
 				.status(404)
@@ -155,7 +163,14 @@ router.delete("/:payeeId", isAuthenticated, async (req, res, next) => {
 				.json({ code: 404, message: "could not find a payee with that ID" });
 			return;
 		}
-		if (payee.created_by_user_id.toString() !== user_id) {
+		if (payee.created_by_user_id.toString() !== user_id && payee.public) {
+			// leaving this separate in case we want to change it to an unauthenticated error later
+			res
+				.status(401)
+				.json({ code: 401, message: "you do not have the authorata" });
+			return;
+		}
+		if (payee.created_by_user_id.toString() !== user_id && !payee.public) {
 			// leaving this separate in case we want to change it to an unauthenticated error later
 			res
 				.status(404)
