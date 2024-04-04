@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const { mappingSchema } = require("./Mapping.model");
 
 const sourceSchema = new Schema(
 	{
@@ -19,13 +20,16 @@ const sourceSchema = new Schema(
 			enum: ["csv", "tsv", "text", "md", "json"],
 			required: [true, "Format is required."],
 		},
+		separator: String,
 		icon: {
 			type: Schema.Types.ObjectId,
 			ref: "Icon",
 		},
 		public: { type: Boolean, default: true },
 		unique_field: String,
-		mapping: [{ type: Schema.Types.ObjectId, ref: "Mapping" }],
+		mapping: {
+			type: mappingSchema,
+		},
 		created_by_user_id: { type: Schema.Types.ObjectId, ref: "User" },
 	},
 	{

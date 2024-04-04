@@ -11,20 +11,22 @@ class AuthError extends Error {
 }
 
 function getTokenFromHeaders(req, res, next) {
-	console.log("\n\ntoken autorize\n\n");
+	// console.log("\n\ntoken autorize\n\n");
 	// Check if the token is available on the request Headers
 	if (
 		req.headers.authorization &&
 		req.headers.authorization.split(" ")[0] === "Bearer"
 	) {
-		console.log(
+		/*
+		 console.log(
 			"\n\n token autorize in condition \n \n",
 			req.headers.authorization,
 		);
+		*/
 
 		const token = req.headers.authorization.split(" ")[1];
 
-		console.log("\n\n token \n \n", token);
+		//console.log("\n\n token \n \n", token);
 		return token;
 	}
 	return null;
