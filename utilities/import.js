@@ -3,9 +3,11 @@
 - Convert to array of expense format
 - Return array so can be inserted
 */
-const fs = require("fs");
+const fs = require("node:fs");
+const { generate, parse, transform, stringify } = require("csv/dist/cjs");
+const path = require("node:path");
 
-const testCsv = fs.readFileSync("./test-bank.csv", {
+const testCsv = fs.readFileSync(path.resolve(__dirname, "./umsaetze.csv"), {
 	encoding: "utf8",
 	flag: "r",
 });
@@ -18,6 +20,17 @@ const jsonReducer = (headers = [], bodyString = "", separator = ",") => {
 };
 
 const csvToJson = (csv, separator = ",") => {
+	const records = parse(csv, {
+		columns: true,
+		skip_empty_lines: true,
+		group_columns_by_name: true,
+	});
+	const refinedRecords = transform(records, (data) =>
+		data.map((value) => value.toUpperCase()),
+	);
+	const output = stringify(refinedRecords);
+	console.log(output);
+
 	const array = csv.split(/\n|\r/);
 	//console.log(array);
 	const [headersString, ...body] = array;
@@ -61,7 +74,12 @@ const csvToExpense = (
 				continue;
 			}
 			if (key === "amount") {
-				newObj[key] = element[mapping[key]].replace(",", ".");
+				newObj[key] = element[mapping[key]]
+					.replace(",", ".")
+					.replace("+", "")
+					.replace("€", "")
+					.replaceAll('"', "")
+					.trim();
 			} else {
 				newObj[key] = element[mapping[key]];
 			}
@@ -71,8 +89,8 @@ const csvToExpense = (
 	return expenseArr;
 };
 
-//const test = csvToExpense(testCsv, ";", testMapping, "bank payment");
+const test = csvToExpense(testCsv, ";", testMapping, "bank payment", 123);
 
-//console.log(test);
+console.log(test);
 
 module.exports = { csvToExpense };
