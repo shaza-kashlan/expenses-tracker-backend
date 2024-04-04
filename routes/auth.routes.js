@@ -102,7 +102,7 @@ router.post("/refresh", isAuthenticated, (req, res) => {
 
 		const newToken = jwt.sign({ _id, userName }, process.env.TOKEN_SECRET, {
 			algorithm: "HS256",
-			expiresIn: "1m",
+			expiresIn: "2h",
 		});
 
 		return res.status(200).json({ token: newToken });
