@@ -59,6 +59,10 @@ const csvToExpense = (
 					.replaceAll('"', "")
 					.trim();
 				newObj[key] = amount;
+				continue;
+			}
+			if (key === "date") {
+				newObj[key] = element[mapping[key]].replaceAll(".", "-");
 			} else {
 				newObj[key] = element[mapping[key]];
 			}
