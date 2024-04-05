@@ -13,7 +13,14 @@ const restaurants = [
 	"VIETBOWL",
 ];
 const supermarkets = ["EDEKA", "Lidl", "REWE", "Penny Market", "PENNY DANKT "];
-const travels = ["BVG", "Uber", "Voi", "TIER*", "BRITISH AIRWAYS"];
+const travels = [
+	//"BVG",
+	"Uber",
+	"Voi",
+	"TIER*",
+	"BRITISH AIRWAYS",
+	"DB Vertrieb",
+];
 const cafesArr = ["DAS HOVEN", "The Barn", "Pavillon am Uf", "Kaffee 9"];
 
 const regexPMaker = (element) => `\w*?${element}\w*?`;
@@ -21,11 +28,31 @@ const regexPMaker = (element) => `\w*?${element}\w*?`;
 const barsRegexp = new RegExp(bars.map(regexPMaker).join("|"));
 
 const lexer = moo.compile({
-	bar: new RegExp(bars.map(regexPMaker).join("|")),
-	restaurants: new RegExp(restaurants.map(regexPMaker).join("|")),
-	supermarkets: new RegExp(supermarkets.map(regexPMaker).join("|")),
-	travel: new RegExp(travels.map(regexPMaker).join("|")),
-	cafes: new RegExp(cafesArr.map(regexPMaker).join("|")),
+	bars: ["SISYPHOS", "ZUM STARKEN AUGUST"],
+	restaurants: [
+		"McDonald's",
+		"ROCOTO",
+		"BABU",
+		"CHUTNIFY",
+		"Burgermeister",
+		"RISA CHICKEN",
+		"CITYCHICKEN",
+		"WALHALLA",
+		"VIETBOWL",
+	],
+	supermarkets: ["EDEKA", "Lidl", "REWE", "Penny Market", "PENNY DANKT "],
+	cafes: ["DAS HOVEN", "The Barn", "Pavillon am Uf", "Kaffee 9"],
+	travel: [
+		"BVG APP",
+		"BVG",
+		"Uber",
+		"Voi",
+		"TIER*",
+		"BRITISH AIRWAYS",
+		"DB Vertrieb",
+		"FLIXBUS",
+	],
+	pharmacy: ["APOTHEKE"],
 	unknown: /.+?/,
 	//   WS:      /[ \t]+/,
 	//   comment: /\/\/.*?$/,
