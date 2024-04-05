@@ -9,6 +9,8 @@ const logger = require("morgan");
 // https://www.npmjs.com/package/cookie-parser
 const cookieParser = require("cookie-parser");
 
+const bodyParser = require("body-parser");
+
 // ℹ️ Needed to accept from requests from 'the outside'. CORS stands for cross origin resource sharing
 // unless the request if from the same domain, by default express wont accept POST requests
 const cors = require("cors");
@@ -35,4 +37,6 @@ module.exports = (app) => {
 	app.use(express.json());
 	app.use(express.urlencoded({ extended: false }));
 	app.use(cookieParser());
+	app.use(bodyParser.text({ type: "text/csv", limit: "2mb" }));
+	//app.use(bodyParser.raw({ type: "text/csv", limit: "2mb" }));
 };

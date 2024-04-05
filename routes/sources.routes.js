@@ -1,8 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const Source = require("../models/Source.model");
+const Mapping = require("../models/Mapping.model");
+const Expense = require("../models/Expense.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 const FAKE_USER_ID = { _id: "660d205410464d8fa79a3fef" };
+const { csvToExpense } = require("../utilities/import");
 
 router.get("/", isAuthenticated, async (req, res, next) => {
 	const { _id: user_id } = req.payload;
@@ -122,6 +125,146 @@ router.put("/:sourceId", isAuthenticated, async (req, res, next) => {
 			{ new: true },
 		);
 		res.status(201).json(updatedSource);
+		return;
+	} catch (err) {
+		console.error("error in update source by ID", err);
+		if (
+			err?.reason?.toString() ===
+			"BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer"
+		) {
+			res
+				.status(404)
+				.json({ code: 404, message: "could not find a source with that ID" });
+			return;
+		}
+		if (err.toString().includes("E11000 duplicate key error")) {
+			res.status(400).json({
+				code: 400,
+				reason: "duplicate_key",
+				message:
+					"there is already a source with that name, please try again with something a little more unique",
+			});
+			return;
+		}
+		next(err);
+	}
+});
+
+router.put("/:sourceId/mappings", isAuthenticated, async (req, res, next) => {
+	const { _id: user_id } = req.payload;
+	const { sourceId } = req.params;
+	const updatedVersion = req.body;
+
+	try {
+		const source = await Source.findById(sourceId);
+		if (!source) {
+			res
+				.status(404)
+				.json({ code: 404, message: "could not find a source with that ID" });
+			return;
+		}
+		if (source.created_by_user_id.toString() !== user_id && source.public) {
+			// leaving this separate in case we want to change it to an unauthenticated error later
+			res
+				.status(401)
+				.json({ code: 401, message: "you do not have the authorata" });
+			return;
+		}
+		if (source.created_by_user_id.toString() !== user_id && !source.public) {
+			res
+				.status(404)
+				.json({ code: 404, message: "could not find a source with that ID" });
+			return;
+		}
+		// TODO: handle required fields and other issues that would cause a 400 error because mongoose does not
+		// for example, changing the name to something that already exists
+
+		const updatedMapping = await Source.findByIdAndUpdate(
+			sourceId,
+			{ mapping: updatedVersion },
+			{ new: true },
+		);
+		const { date, description, notes, amount, payee } =
+			updatedMapping._doc.mapping;
+		res.status(200).json({ date, description, notes, amount, payee });
+		return;
+	} catch (err) {
+		console.error("error in update source by ID", err);
+		if (
+			err?.reason?.toString() ===
+			"BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer"
+		) {
+			res
+				.status(404)
+				.json({ code: 404, message: "could not find a source with that ID" });
+			return;
+		}
+		if (err.toString().includes("E11000 duplicate key error")) {
+			res.status(400).json({
+				code: 400,
+				reason: "duplicate_key",
+				message:
+					"there is already a source with that name, please try again with something a little more unique",
+			});
+			return;
+		}
+		next(err);
+	}
+});
+
+router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
+	const { _id: user_id } = req.payload;
+	const { sourceId } = req.params;
+	const csvToImport = req.body;
+
+	console.log(typeof csvToImport);
+
+	try {
+		const source = await Source.findById(sourceId);
+		if (!source) {
+			res
+				.status(404)
+				.json({ code: 404, message: "could not find a source with that ID" });
+			return;
+		}
+		if (source.created_by_user_id.toString() !== user_id && !source.public) {
+			res
+				.status(404)
+				.json({ code: 404, message: "could not find a source with that ID" });
+			return;
+		}
+		// TODO: handle required fields and other issues that would cause a 400 error because mongoose does not
+		// for example, changing the name to something that already exists
+		const { separator, mapping, type, number_style } = source._doc;
+		// console.log({
+		// 	separator: separator.toString(),
+		// 	mapping: mapping,
+		// 	type: type.toString(),
+		// });
+		const myConvertedExpenses = csvToExpense(
+			user_id,
+			csvToImport,
+			separator.toString(),
+			{
+				date: mapping.date,
+				description: mapping.description,
+				notes: mapping.notes,
+				amount: mapping.amount,
+				payee: mapping.payee,
+			},
+			type.toString(),
+			number_style,
+		);
+		console.log(myConvertedExpenses);
+		if (myConvertedExpenses == null) {
+			res
+				.status(500)
+				.json({ code: 500, message: "an error ocurred on import" });
+		}
+		const insertedExpenses = await Expense.insertMany(myConvertedExpenses);
+		//console.log("after insert", insertedExpenses);
+		const imported_expenses = insertedExpenses.length;
+		res.status(200).json({ status: "success", imported_expenses });
 		return;
 	} catch (err) {
 		console.error("error in update source by ID", err);

@@ -1,19 +1,19 @@
 const { Schema, model } = require("mongoose");
 
-const mappingSchema = new Schema(
-	{
-		date: String,
-		description: String,
-		notes: String,
-		amount: String,
-		created_by_user_id: { type: Schema.Types.ObjectId, ref: "User" },
-	},
-	{
-		// this second object adds extra properties: `createdAt` and `updatedAt`
-		timestamps: true,
-	},
-);
+const mappingSchema = new Schema({
+	date: { type: String, default: "" },
+	description: { type: String, default: "" },
+	notes: { type: String, default: "" },
+	amount: { type: String, default: "" },
+	payee: { type: String, default: "" },
+});
+
+mappingSchema.methods.toJSON = function () {
+	const { _id, ...mappingToReturn } = this._doc;
+
+	return mappingToReturn;
+};
 
 const Mapping = model("Mapping", mappingSchema);
 
-module.exports = Mapping;
+module.exports = { Mapping, mappingSchema };

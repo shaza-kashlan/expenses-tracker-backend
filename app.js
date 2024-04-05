@@ -23,15 +23,20 @@ app.use(cors());
 const indexRoutes = require("./routes/index.routes");
 app.use("/api", indexRoutes);
 
-//Source routes
-const sourceRouter = require("./routes/source.routes");
-app.use("/sources", sourceRouter);
-
 const authRoutes = require("./routes/auth.routes");
 app.use("/users", authRoutes);
 
+const categoriesRouter = require("./routes/categories.routes");
+app.use("/categories", categoriesRouter);
+
 const expenseRoutes = require("./routes/expenses.routes");
 app.use("/expenses", expenseRoutes);
+
+const payeesRoutes = require("./routes/payees.routes");
+app.use("/payees", payeesRoutes);
+
+const sourceRouter = require("./routes/sources.routes");
+app.use("/sources", sourceRouter);
 
 // ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
 require("./error-handling")(app);
