@@ -93,9 +93,8 @@ router.post("/login", async (req, res) => {
           message: "Incorrect password please try again!",
         });
       } else {
-        const { _id, userName } = foundUser;
-        const payload = { _id, userName };
-
+        const { _id, userName, imageUrl } = foundUser;
+        const payload = { _id, userName, imageUrl };
         const accessToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
           expiresIn: "2h",
           algorithm: "HS256",
@@ -109,6 +108,7 @@ router.post("/login", async (req, res) => {
           message: "You successfully logged in",
           accessToken,
           refreshToken,
+          imageUrl,
         });
       }
     }
@@ -222,7 +222,7 @@ router.post(
 
     if (!req.file) {
       console.log("there was an error uploading the file");
-      res.status(400).json({code: 400, message: "the file is missing"})
+      res.status(400).json({ code: 400, message: "the file is missing" });
       return;
     }
 
