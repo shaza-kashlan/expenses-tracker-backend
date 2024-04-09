@@ -5,6 +5,7 @@
 */
 const { parse: parseCSV } = require("csv/sync");
 const {parse: parseDate, format} = require("date-fns")
+const {runThroughLexer} = require("./lexer")
 
 const csvToJson = (csv, separator = ",") => {
 	const records = parseCSV(csv, {
@@ -43,7 +44,8 @@ const csvToExpense = (
 	mapping = {},
 	type = "cash",
 	number_style = "normal",
-	date_format = ""
+	date_format = "",
+	autocategorise = true
 ) => {
 	if (!user_id) {
 		console.error("no user id provided for import");
@@ -76,12 +78,20 @@ const csvToExpense = (
 				continue;
 			}
 			if (key === "date") {
-				console.log('df', date_format)
+				//console.log('df', date_format)
 				if (date_format) {
 					newObj[key] = wrangleDateFormat(element[mapping[key]], date_format)
+				} else {
+					console.log("didn't get a date format, I hope this is yyyy-mm-dd, or there might be issues", element[mapping[key]])
+					newObj[key] = element[mapping[key]]
 				}
 				
-			} else {
+			} if (key === "description" && autocategorise) {
+				newObj[key] = element[mapping[key]];
+				newObj.notes = runThroughLexer(element[mapping[key]]);
+			}
+			
+			else {
 				newObj[key] = element[mapping[key]];
 			}
 		}
