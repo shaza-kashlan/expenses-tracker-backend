@@ -33,7 +33,7 @@ const expenseSchema = new Schema(
 			type: [String],
 		},
 		created_by_user_id: { type: Schema.Types.ObjectId, ref: "User" },
-		// job_id ??
+		trx_id: {type: String, index: { unique: true, sparse: true }},
 	},
 	{ timestamps: true },
 );

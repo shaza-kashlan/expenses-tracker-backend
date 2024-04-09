@@ -1,0 +1,93 @@
+/*
+- Import some csv data
+- Convert to array of expense format
+- Return array so can be inserted
+*/
+const { parse: parseCSV } = require("csv/sync");
+const {parse: parseDate, format} = require("date-fns")
+
+const csvToJson = (csv, separator = ",") => {
+	const records = parseCSV(csv, {
+		columns: true,
+		skip_empty_lines: true,
+		delimiter: separator,
+	});
+
+	return records;
+};
+
+// const testMapping = {
+// 	date: "Buchungsdatum",
+// 	description: "Beschreibung",
+// 	notes: "",
+// 	amount: "Originalbetrag",
+// 	payee: "",
+// };
+
+const wrangleDateFormat = (dateString, dateFormat) => {
+	if (dateFormat.toLowerCase() === "YYYY-MM-DD") {
+		return dateString
+	}
+	
+	const parsedDate = format(parseDate(dateString, dateFormat.toLowerCase(), new Date()),'yyyy-mm-dd')
+	
+	return parsedDate
+}
+
+//console.log(wrangleDateFormat('29.03.2024', 'dd.mm.yyyy'))
+
+const csvToExpense = (
+	user_id,
+	data = "",
+	separator = ",",
+	mapping = {},
+	type = "cash",
+	number_style = "normal",
+	date_format = ""
+) => {
+	if (!user_id) {
+		console.error("no user id provided for import");
+		return null;
+	}
+	console.log('date f',date_format)
+	const myArr = csvToJson(data, separator);
+
+	const expenseArr = myArr.map((element) => {
+		const newObj = {
+			payment_method: type,
+			created_by_user_id: user_id,
+		};
+		for (const key in mapping) {
+			//console.log(key);
+			if (!mapping[key]) {
+				continue;
+			}
+			if (key === "amount") {
+				let amount = element[mapping[key]];
+				if (number_style === "german") {
+					amount = amount.replace(".", "").replace(",", ".");
+				}
+				amount = amount
+					.replace("+", "")
+					.replace("€", "")
+					.replaceAll('"', "")
+					.trim();
+				newObj[key] = amount;
+				continue;
+			}
+			if (key === "date") {
+				console.log('df', date_format)
+				if (date_format) {
+					newObj[key] = wrangleDateFormat(element[mapping[key]], date_format)
+				}
+				
+			} else {
+				newObj[key] = element[mapping[key]];
+			}
+		}
+		return newObj;
+	});
+	return expenseArr;
+};
+
+module.exports = { csvToExpense };

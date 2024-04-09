@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const { mappingSchema } = require("./Mapping.model");
 
 const sourceSchema = new Schema(
 	{
@@ -11,7 +12,7 @@ const sourceSchema = new Schema(
 		},
 		type: {
 			type: String,
-			enum: ["bank_statement", "credit_card_statement", "invoice"],
+			enum: ["bank", "credit_card", "cash_invoice"],
 			required: [true, "Type is required."],
 		},
 		format: {
@@ -19,13 +20,18 @@ const sourceSchema = new Schema(
 			enum: ["csv", "tsv", "text", "md", "json"],
 			required: [true, "Format is required."],
 		},
+		separator: { type: String, default: "," },
+		number_style: { type: String, default: "normal" },
 		icon: {
 			type: Schema.Types.ObjectId,
 			ref: "Icon",
 		},
 		public: { type: Boolean, default: true },
 		unique_field: String,
-		mapping: [{ type: Schema.Types.ObjectId, ref: "Mapping" }],
+		date_format: String,
+		mapping: {
+			type: mappingSchema,
+		},
 		created_by_user_id: { type: Schema.Types.ObjectId, ref: "User" },
 	},
 	{
