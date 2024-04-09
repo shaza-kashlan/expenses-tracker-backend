@@ -3,10 +3,11 @@
 - Convert to array of expense format
 - Return array so can be inserted
 */
-const { parse } = require("csv/sync");
+const { parse: parseCSV } = require("csv/sync");
+const {parse: parseDate, format} = require("date-fns")
 
 const csvToJson = (csv, separator = ",") => {
-	const records = parse(csv, {
+	const records = parseCSV(csv, {
 		columns: true,
 		skip_empty_lines: true,
 		delimiter: separator,
@@ -23,6 +24,18 @@ const csvToJson = (csv, separator = ",") => {
 // 	payee: "",
 // };
 
+const wrangleDateFormat = (dateString, dateFormat) => {
+	if (dateFormat.toLowerCase() === "YYYY-MM-DD") {
+		return dateString
+	}
+	
+	const parsedDate = format(parseDate(dateString, dateFormat.toLowerCase(), new Date()),'yyyy-mm-dd')
+	
+	return parsedDate
+}
+
+//console.log(wrangleDateFormat('29.03.2024', 'dd.mm.yyyy'))
+
 const csvToExpense = (
 	user_id,
 	data = "",
@@ -30,12 +43,13 @@ const csvToExpense = (
 	mapping = {},
 	type = "cash",
 	number_style = "normal",
+	date_format = ""
 ) => {
 	if (!user_id) {
 		console.error("no user id provided for import");
 		return null;
 	}
-
+	console.log('date f',date_format)
 	const myArr = csvToJson(data, separator);
 
 	const expenseArr = myArr.map((element) => {
@@ -62,7 +76,11 @@ const csvToExpense = (
 				continue;
 			}
 			if (key === "date") {
-				newObj[key] = element[mapping[key]].replaceAll(".", "-");
+				console.log('df', date_format)
+				if (date_format) {
+					newObj[key] = wrangleDateFormat(element[mapping[key]], date_format)
+				}
+				
 			} else {
 				newObj[key] = element[mapping[key]];
 			}

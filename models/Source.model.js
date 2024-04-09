@@ -12,7 +12,7 @@ const sourceSchema = new Schema(
 		},
 		type: {
 			type: String,
-			enum: ["bank_statement", "credit_card_statement", "invoice"],
+			enum: ["bank", "credit_card", "cash_invoice"],
 			required: [true, "Type is required."],
 		},
 		format: {
@@ -28,6 +28,7 @@ const sourceSchema = new Schema(
 		},
 		public: { type: Boolean, default: true },
 		unique_field: String,
+		date_format: String,
 		mapping: {
 			type: mappingSchema,
 		},
