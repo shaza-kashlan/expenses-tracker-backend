@@ -24,5 +24,12 @@ const userAddressSchema = new Schema({
   },
 });
 
+userAddressSchema.methods.toJSON = function () {
+  const { _id, ...addressToReturn } = this._doc;
+
+  return addressToReturn;
+};
+
 const UserAddress = model("UserAddress", userAddressSchema);
-module.exports = UserAddress;
+
+module.exports = { UserAddress, userAddressSchema };
