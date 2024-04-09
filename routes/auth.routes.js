@@ -222,6 +222,7 @@ router.post(
 
     if (!req.file) {
       console.log("there was an error uploading the file");
+      res.status(400).json({code: 400, message: "the file is missing"})
       return;
     }
 

@@ -38,6 +38,12 @@ const userSchema = new Schema(
   }
 );
 
+userSchema.methods.toJSON = function () {
+  const { password, __v,...userToReturn } = this._doc;
+
+  return userToReturn;
+};
+
 // Create User model
 const User = model("User", userSchema);
 
