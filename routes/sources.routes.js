@@ -270,7 +270,7 @@ router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 		res.status(200).json({ status: "success", imported_expenses });
 		return;
 	} catch (err) {
-		console.error("error in update source by ID", err);
+		console.error("error in import from source", err);
 		if (
 			err?.reason?.toString() ===
 			"BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer"
@@ -278,6 +278,15 @@ router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 			res
 				.status(404)
 				.json({ code: 404, message: "could not find a source with that ID" });
+			return;
+		}
+		if (err.code.includes("CSV_")) {
+			res.status(400).json({
+				code: 400,
+				reason: "csv parsing error",
+				message:
+					`There was an error parsing the provided csv, ${err.toString()}`,
+			}).end();
 			return;
 		}
 		if (err.toString().includes("E11000 duplicate key error")) {
