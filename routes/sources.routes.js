@@ -280,7 +280,7 @@ router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 				.json({ code: 404, message: "could not find a source with that ID" });
 			return;
 		}
-		if (err.code.includes("CSV_")) {
+		if (typeof err?.code === "string" &&  err?.code?.includes("CSV_")) {
 			res.status(400).json({
 				code: 400,
 				reason: "csv parsing error",
@@ -289,7 +289,7 @@ router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 			}).end();
 			return;
 		}
-		if (err.toString().includes("E11000 duplicate key error")) {
+		if (err.code === 11000) {
 			console.log(err)
 			const imported_expenses = err.insertedDocs.length
 			const skipped_records = err.writeErrors.length
