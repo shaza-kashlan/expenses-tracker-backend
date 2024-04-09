@@ -79,7 +79,11 @@ const csvToExpense = (
 				console.log('df', date_format)
 				if (date_format) {
 					newObj[key] = wrangleDateFormat(element[mapping[key]], date_format)
+				} else {
+					console.log("didn't get a date format, I hope this is yyyy-mm-dd, or there might be issues", element[mapping[key]])
+					newObj[key] = element[mapping[key]]
 				}
+				
 				
 			} else {
 				newObj[key] = element[mapping[key]];
