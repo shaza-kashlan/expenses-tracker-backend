@@ -215,9 +215,10 @@ router.put("/:sourceId/mappings", isAuthenticated, async (req, res, next) => {
 router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 	const { _id: user_id } = req.payload;
 	const { sourceId } = req.params;
+	console.log(req.headers["content-type"])
 	const csvToImport = req.body;
 
-	console.log(typeof csvToImport);
+	//console.log(typeof csvToImport);
 
 	try {
 		const source = await Source.findById(sourceId);
@@ -235,7 +236,7 @@ router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 		}
 		// TODO: handle required fields and other issues that would cause a 400 error because mongoose does not
 		// for example, changing the name to something that already exists
-		const { separator, mapping, type, number_style } = source._doc;
+		const { separator, mapping, type, number_style, unique_field, date_format } = source._doc;
 		// console.log({
 		// 	separator: separator.toString(),
 		// 	mapping: mapping,
@@ -251,23 +252,25 @@ router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 				notes: mapping.notes,
 				amount: mapping.amount,
 				payee: mapping.payee,
+				trx_id: unique_field,
 			},
 			type.toString(),
 			number_style,
+			date_format
 		);
-		console.log(myConvertedExpenses);
+		//console.log(myConvertedExpenses);
 		if (myConvertedExpenses == null) {
 			res
 				.status(500)
 				.json({ code: 500, message: "an error ocurred on import" });
 		}
-		const insertedExpenses = await Expense.insertMany(myConvertedExpenses);
+		const insertedExpenses = await Expense.insertMany(myConvertedExpenses, { ordered: false });
 		//console.log("after insert", insertedExpenses);
 		const imported_expenses = insertedExpenses.length;
 		res.status(200).json({ status: "success", imported_expenses });
 		return;
 	} catch (err) {
-		console.error("error in update source by ID", err);
+		console.error("error in import from source", err);
 		if (
 			err?.reason?.toString() ===
 			"BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer"
@@ -277,13 +280,29 @@ router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 				.json({ code: 404, message: "could not find a source with that ID" });
 			return;
 		}
-		if (err.toString().includes("E11000 duplicate key error")) {
+		if (typeof err?.code === "string" &&  err?.code?.includes("CSV_")) {
 			res.status(400).json({
 				code: 400,
-				reason: "duplicate_key",
+				reason: "csv parsing error",
 				message:
-					"there is already a source with that name, please try again with something a little more unique",
-			});
+					`There was an error parsing the provided csv, ${err.toString()}`,
+			}).end();
+			return;
+		}
+		if (err.code === 11000) {
+			console.log(err)
+			const imported_expenses = err.insertedDocs.length
+			const skipped_records = err.writeErrors.length
+			if (imported_expenses > 0) {
+				res.status(200).json({status: "success", imported_expenses, skipped_records,message: "some records were skipped as there are already records with the same unique transaction ID" }).end()
+			}
+			res.status(400).json({
+				code: 400,
+				reason: "duplicate_keys",
+				message:
+					"all records were skipped because there are already records with the same unique transaction ID",
+				skipped_records
+			}).end();
 			return;
 		}
 		next(err);
