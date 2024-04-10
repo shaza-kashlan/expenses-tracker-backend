@@ -6,11 +6,12 @@ const FAKE_USER_ID = { _id: "660d205410464d8fa79a3fef" };
 
 router.get("/", isAuthenticated, async (req, res, next) => {
 	const { _id: user_id } = req.payload;
+	const {include_source_details} = req.query;
 
 	try {
 		const expenses = await Expense.find({
 			created_by_user_id: user_id,
-		}).populate("category");
+		}).populate({path: "category", select: "name description"}).populate(include_source_details === "true"? {path: "source", select: "name type"} :  "");
 		res.status(200).json(expenses);
 	} catch (err) {
 		console.error("error in get all expenses", err);
@@ -54,10 +55,10 @@ router.post("/", isAuthenticated, async (req, res, next) => {
 router.get("/:expenseId", isAuthenticated, async (req, res, next) => {
 	const { _id: user_id } = req.payload;
 	const { expenseId } = req.params;
-	const { include_parents } = req.query;
+	const {include_source_details} = req.query;
 
 	try {
-		const expense = await Expense.findById(expenseId).populate("category");
+		const expense = await Expense.findById(expenseId).populate({path: "category", select: "name description"}).populate(include_source_details === "true" ? {path: "source", select: "name type"} :  "");
 		if (!expense) {
 			res
 				.status(404)
@@ -77,7 +78,7 @@ router.get("/:expenseId", isAuthenticated, async (req, res, next) => {
 		return;
 	} catch (err) {
 		if (
-			err.reason.toString() ===
+			err?.reason?.toString() ===
 			"BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer"
 		) {
 			res
