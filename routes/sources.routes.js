@@ -271,10 +271,21 @@ router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 		const insertedExpenses = await Expense.insertMany(myConvertedExpenses, { ordered: false });
 		//console.log("after insert", insertedExpenses);
 		const imported_expenses = insertedExpenses.length;
-		res.status(200).json({ status: "success", imported_expenses });
-		return;
+		if (imported_expenses > 0 ) {
+			res.status(200).json({ status: "success", imported_expenses });
+			return;
+		} else {
+			throw new Error("couldn't import any items")
+		}
+
 	} catch (err) {
 		console.error("error in import from source", err);
+		if (err.toString().includes("couldn't import any items")) {
+			res
+			.status(500)
+			.json({ code: 500, message: "could not import any of those expenses, maybe there is an error with the source file or our systems. Get in touch with our support team for help" });
+		return;
+		}
 		if (
 			err?.reason?.toString() ===
 			"BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer"

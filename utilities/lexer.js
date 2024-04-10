@@ -351,7 +351,7 @@ const runThroughLexer = (string,patterns = {}) => {
 	});
 	const inferredType = lexer.reset(string.trim()).next()?.type
 	//console.log('got type',inferredType)
-	return inferredType
+	return inferredType !== "unset" ? inferredType : null
 };
 //console.log(JSON.stringify(testStrings.map(runThroughLexer), null, 4));
 
