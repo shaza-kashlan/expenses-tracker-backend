@@ -1,5 +1,7 @@
 const moo = require("moo");
 
+
+
 const patterns = {
 	bars: ["SISYPHOS", "ZUM STARKEN AUGUST"],
 	restaurants: [
@@ -54,10 +56,7 @@ const createLexerSet = (arrayOfPatterns) => {
 }
 
 
-const lexer = moo.compile({
-	...createLexerSet(patterns),
-	unset: /.+?/,
-});
+
 
 
 const testStrings = [
@@ -344,12 +343,16 @@ const testStrings = [
 	"Burgermeister          Berlin        DE	",
 ];
 
-const runThroughLexer = (string) => {
-	console.log(`running ${string} through lexer`)
+const runThroughLexer = (string,patterns = {}) => {
+	//console.log(`running ${string} through lexer`)
+	const lexer = moo.compile({
+		...patterns,
+		unset: /.+?/,
+	});
 	const inferredType = lexer.reset(string.trim()).next()?.type
-	console.log('got type',inferredType)
+	//console.log('got type',inferredType)
 	return inferredType
 };
 //console.log(JSON.stringify(testStrings.map(runThroughLexer), null, 4));
 
-module.exports = {runThroughLexer}
+module.exports = {runThroughLexer, createLexerSet}

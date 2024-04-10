@@ -5,7 +5,23 @@
 */
 const { parse: parseCSV } = require("csv/sync");
 const {parse: parseDate, format} = require("date-fns")
-const {runThroughLexer} = require("./lexer")
+const {runThroughLexer, createLexerSet} = require("./lexer")
+
+const Category = require("../models/Category.model");
+
+const getPatterns = async () => {
+	console.log('finding')
+	const patterns = await Category.find({patterns:{ $exists: true,$ne: []}},{patterns: 1,name:1, _id: {
+        $toString: "$_id"
+      }})
+	//console.log(patterns)
+	const patternsObj = patterns.reduce((acc,category) => {
+		return {...acc,[category._id]: category.patterns}
+	},{})
+	//console.log(patternsObj)
+	return patternsObj
+}
+
 
 const csvToJson = (csv, separator = ",") => {
 	const records = parseCSV(csv, {
@@ -25,6 +41,7 @@ const csvToJson = (csv, separator = ",") => {
 // 	payee: "",
 // };
 
+
 const wrangleDateFormat = (dateString, dateFormat) => {
 	if (dateFormat.toLowerCase() === "YYYY-MM-DD") {
 		return dateString
@@ -37,7 +54,7 @@ const wrangleDateFormat = (dateString, dateFormat) => {
 
 //console.log(wrangleDateFormat('29.03.2024', 'dd.mm.yyyy'))
 
-const csvToExpense = (
+const csvToExpense = async (
 	user_id,
 	data = "",
 	separator = ",",
@@ -53,6 +70,8 @@ const csvToExpense = (
 	}
 	console.log('date f',date_format)
 	const myArr = csvToJson(data, separator);
+	const patterns = await getPatterns()
+	const patternsObj = createLexerSet(patterns)
 
 	const expenseArr = myArr.map((element) => {
 		const newObj = {
@@ -88,7 +107,7 @@ const csvToExpense = (
 				
 			} if (key === "description" && autocategorise) {
 				newObj[key] = element[mapping[key]];
-				newObj.notes = runThroughLexer(element[mapping[key]]);
+				newObj.category = runThroughLexer(element[mapping[key]],patternsObj);
 			}
 			
 			else {

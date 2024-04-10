@@ -245,7 +245,7 @@ router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 		// 	mapping: mapping,
 		// 	type: type.toString(),
 		// });
-		const myConvertedExpenses = csvToExpense(
+		const myConvertedExpenses = await csvToExpense(
 			user_id,
 			csvToImport,
 			separator.toString(),
