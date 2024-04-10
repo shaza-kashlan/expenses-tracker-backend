@@ -56,6 +56,7 @@ const wrangleDateFormat = (dateString, dateFormat) => {
 
 const csvToExpense = async (
 	user_id,
+	source_id,
 	data = "",
 	separator = ",",
 	mapping = {},
@@ -77,6 +78,7 @@ const csvToExpense = async (
 		const newObj = {
 			payment_method: type,
 			created_by_user_id: user_id,
+			source: source_id,
 		};
 		for (const key in mapping) {
 			//console.log(key);

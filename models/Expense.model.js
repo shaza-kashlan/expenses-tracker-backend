@@ -32,6 +32,7 @@ const expenseSchema = new Schema(
 		tags: {
 			type: [String],
 		},
+		source: {type: Schema.Types.ObjectId, ref: "Source"},
 		created_by_user_id: { type: Schema.Types.ObjectId, ref: "User" },
 		trx_id: {type: String, index: { unique: true, sparse: true }},
 	},
