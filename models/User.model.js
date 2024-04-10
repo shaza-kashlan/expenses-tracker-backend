@@ -23,7 +23,10 @@ const userSchema = new Schema(
       type: String,
       default: "",
     },
-    address: userAddressSchema,
+    address: {
+      type: userAddressSchema,
+      default: {}, // Default value is an empty object
+    },
     imageUrl: {
       type: String,
       default: "",
@@ -39,7 +42,7 @@ const userSchema = new Schema(
 );
 
 userSchema.methods.toJSON = function () {
-  const { password, __v,...userToReturn } = this._doc;
+  const { password, __v, ...userToReturn } = this._doc;
 
   return userToReturn;
 };
