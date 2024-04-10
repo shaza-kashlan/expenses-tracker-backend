@@ -6,6 +6,8 @@ const Expense = require("../models/Expense.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 const FAKE_USER_ID = { _id: "660d205410464d8fa79a3fef" };
 const { csvToExpense } = require("../utilities/import");
+const { CsvError } = require("csv-parse");
+
 
 router.get("/", isAuthenticated, async (req, res, next) => {
 	const { _id: user_id } = req.payload;
@@ -215,10 +217,11 @@ router.put("/:sourceId/mappings", isAuthenticated, async (req, res, next) => {
 router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 	const { _id: user_id } = req.payload;
 	const { sourceId } = req.params;
+	const {autocategorise = true} = req.query
 	console.log(req.headers["content-type"])
 	const csvToImport = req.body;
 
-	//console.log(typeof csvToImport);
+	console.log(autocategorise)
 
 	try {
 		const source = await Source.findById(sourceId);
@@ -242,7 +245,7 @@ router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 		// 	mapping: mapping,
 		// 	type: type.toString(),
 		// });
-		const myConvertedExpenses = csvToExpense(
+		const myConvertedExpenses = await csvToExpense(
 			user_id,
 			csvToImport,
 			separator.toString(),
@@ -256,7 +259,8 @@ router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 			},
 			type.toString(),
 			number_style,
-			date_format
+			date_format,
+			autocategorise
 		);
 		//console.log(myConvertedExpenses);
 		if (myConvertedExpenses == null) {
@@ -267,10 +271,21 @@ router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 		const insertedExpenses = await Expense.insertMany(myConvertedExpenses, { ordered: false });
 		//console.log("after insert", insertedExpenses);
 		const imported_expenses = insertedExpenses.length;
-		res.status(200).json({ status: "success", imported_expenses });
-		return;
+		if (imported_expenses > 0 ) {
+			res.status(200).json({ status: "success", imported_expenses });
+			return;
+		} else {
+			throw new Error("couldn't import any items")
+		}
+
 	} catch (err) {
 		console.error("error in import from source", err);
+		if (err.toString().includes("couldn't import any items")) {
+			res
+			.status(500)
+			.json({ code: 500, message: "could not import any of those expenses, maybe there is an error with the source file or our systems. Get in touch with our support team for help" });
+		return;
+		}
 		if (
 			err?.reason?.toString() ===
 			"BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer"

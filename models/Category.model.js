@@ -8,6 +8,7 @@ const categorySchema = new Schema(
     icon: { type: Schema.Types.ObjectId, ref: "Icon" },
     public: { type: Boolean, default: true },
     created_by_user_id: { type: Schema.Types.ObjectId, ref: "User" },
+    patterns: {type: [String]}
   },
   {
     // this second object adds extra properties: `createdAt` and `updatedAt`

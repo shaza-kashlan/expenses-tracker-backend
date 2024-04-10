@@ -21,9 +21,9 @@ router.get("/", isAuthenticated, async (req, res, next) => {
 });
 
 router.post("/", isAuthenticated, async (req, res, next) => {
-	const { _id: user_id } = req.payload || FAKE_USER_ID;
+	const { _id: user_id } = req.payload;
 	const newCategoryBody = req.body;
-	newCategoryBody.created_by_user_id = user_id || FAKE_USER_ID;
+	newCategoryBody.created_by_user_id = user_id;
 
 	// TODO: handle create icon if included, create mappings if included
 	try {
@@ -54,7 +54,7 @@ router.post("/", isAuthenticated, async (req, res, next) => {
 });
 
 router.get("/:categoryId", isAuthenticated, async (req, res, next) => {
-	const { _id: user_id } = req.payload || FAKE_USER_ID;
+	const { _id: user_id } = req.payload;
 	const { categoryId } = req.params;
 	const { include_parents } = req.query;
 	try {
@@ -101,7 +101,7 @@ router.get("/:categoryId", isAuthenticated, async (req, res, next) => {
 });
 
 router.put("/:categoryId", isAuthenticated, async (req, res, next) => {
-	const { _id: user_id } = req.payload || FAKE_USER_ID;
+	const { _id: user_id } = req.payload;
 	const { categoryId } = req.params;
 	const updatedVersion = req.body;
 
@@ -154,8 +154,121 @@ router.put("/:categoryId", isAuthenticated, async (req, res, next) => {
 	}
 });
 
+router.post("/:categoryId/patterns", isAuthenticated, async (req, res, next) => {
+	const { _id: user_id } = req.payload;
+	const { categoryId } = req.params;
+	const patternsToAdd = req.body;
+
+	try {
+		const category = await Category.findById(categoryId);
+		if (!category) {
+			res
+				.status(404)
+				.json({ code: 404, message: "could not find a category with that ID" });
+			return;
+		}
+
+		if (category.created_by_user_id.toString() !== user_id && !category.public) {
+			res
+				.status(401)
+				.json({ code: 401, message: "you do not have the autharata" });
+			return;
+		}
+
+		// TODO: handle required fields and other issues that would cause a 400 error because mongoose does not
+		// for example, changing the name to something that already exists
+		const uniquePatterns = Array.from(new Set([...category.patterns,...patternsToAdd]))
+		
+		const {name, patterns, _id} = await Category.findByIdAndUpdate(
+			categoryId,
+			{patterns: uniquePatterns},
+			{ new: true },
+		);
+		res.status(201).json({_id, name, patterns});
+		return;
+	} catch (err) {
+		console.error("error in update patterns for category", err);
+		if (
+			err?.reason?.toString() ===
+			"BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer"
+		) {
+			res
+				.status(404)
+				.json({ code: 404, message: "could not find a category with that ID" });
+			return;
+		}
+		if (err.toString().includes("E11000 duplicate key error")) {
+			res.status(400).json({
+				code: 400,
+				reason: "duplicate_key",
+				message:
+					"there is already a category with that name, please try again with something a little more unique",
+			});
+			return;
+		}
+		next(err);
+	}
+});
+
+router.delete("/:categoryId/patterns", isAuthenticated, async (req, res, next) => {
+	const { _id: user_id } = req.payload;
+	const { categoryId } = req.params;
+	const patternsToRemove = req.body;
+
+	try {
+		const category = await Category.findById(categoryId);
+		if (!category) {
+			res
+				.status(404)
+				.json({ code: 404, message: "could not find a category with that ID" });
+			return;
+		}
+
+		if (category.created_by_user_id.toString() !== user_id) {
+			res
+				.status(401)
+				.json({ code: 401, message: "you do not have the autharata" });
+			return;
+		}
+
+		// TODO: handle required fields and other issues that would cause a 400 error because mongoose does not
+		// for example, changing the name to something that already exists
+		
+		const filteredPatterns = category.patterns.filter(element => !patternsToRemove.includes(element))
+		
+		const {name, patterns, _id} = await Category.findByIdAndUpdate(
+			categoryId,
+			{patterns: filteredPatterns},
+			{ new: true },
+		);
+		res.status(201).json({_id, name, patterns});
+		return;
+	} catch (err) {
+		console.error("error in update patterns for category", err);
+		if (
+			err?.reason?.toString() ===
+			"BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer"
+		) {
+			res
+				.status(404)
+				.json({ code: 404, message: "could not find a category with that ID" });
+			return;
+		}
+		if (err.toString().includes("E11000 duplicate key error")) {
+			res.status(400).json({
+				code: 400,
+				reason: "duplicate_key",
+				message:
+					"there is already a category with that name, please try again with something a little more unique",
+			});
+			return;
+		}
+		next(err);
+	}
+});
+
 router.delete("/:categoryId", isAuthenticated, async (req, res, next) => {
-	const { _id: user_id } = req.payload || FAKE_USER_ID;
+	const { _id: user_id } = req.payload;
 	const { categoryId } = req.params;
 
 	try {
