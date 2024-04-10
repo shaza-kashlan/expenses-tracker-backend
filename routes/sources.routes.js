@@ -247,6 +247,7 @@ router.post("/:sourceId/import", isAuthenticated, async (req, res, next) => {
 		// });
 		const myConvertedExpenses = await csvToExpense(
 			user_id,
+			sourceId,
 			csvToImport,
 			separator.toString(),
 			{
