@@ -11,7 +11,7 @@ router.get("/", isAuthenticated, async (req, res, next) => {
 	try {
 		const expenses = await Expense.find({
 			created_by_user_id: user_id,
-		}).populate({path: "category", select: "name description"}).populate(include_source_details === "true"? {path: "source", select: "name type"} :  "");
+		}).populate({path: "category", select: "name description icon"}).populate(include_source_details === "true"? {path: "source", select: "name type"} :  "");
 		res.status(200).json(expenses);
 	} catch (err) {
 		console.error("error in get all expenses", err);
@@ -58,7 +58,7 @@ router.get("/:expenseId", isAuthenticated, async (req, res, next) => {
 	const {include_source_details} = req.query;
 
 	try {
-		const expense = await Expense.findById(expenseId).populate({path: "category", select: "name description"}).populate(include_source_details === "true" ? {path: "source", select: "name type"} :  "");
+		const expense = await Expense.findById(expenseId).populate({path: "category", select: "name description icon"}).populate(include_source_details === "true" ? {path: "source", select: "name type"} :  "");
 		if (!expense) {
 			res
 				.status(404)
