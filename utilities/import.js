@@ -80,7 +80,7 @@ const csvToExpense = async (
 			created_by_user_id: user_id,
 			source: source_id,
 		};
-		console.log(mapping)
+		//console.log(mapping)
 		for (const key in mapping) {
 			//console.log(key);
 			if (!mapping[key] === '') {
@@ -122,7 +122,7 @@ const csvToExpense = async (
 			}
 			
 			else {
-				console.log('unknown key',key)
+				//console.log('unknown key',key)
 				//newObj[key] = element[mapping[key]];
 				continue
 			}
