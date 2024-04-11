@@ -46,7 +46,7 @@ const wrangleDateFormat = (dateString, dateFormat) => {
 	if (dateFormat.toLowerCase() === "YYYY-MM-DD") {
 		return dateString
 	}
-	
+	console.log('parsing', dateString, dateFormat)
 	const parsedDate = format(parseDate(dateString, dateFormat.toLowerCase(), new Date()),'yyyy-mm-dd')
 	
 	return parsedDate
@@ -80,9 +80,11 @@ const csvToExpense = async (
 			created_by_user_id: user_id,
 			source: source_id,
 		};
+		//console.log(mapping)
 		for (const key in mapping) {
 			//console.log(key);
-			if (!mapping[key]) {
+			if (!mapping[key] === '') {
+				console.log('i am empty')
 				continue;
 			}
 			if (key === "amount") {
@@ -99,9 +101,12 @@ const csvToExpense = async (
 				continue;
 			}
 			if (key === "date") {
-				//console.log('df', date_format)
+				
 				if (date_format) {
-					newObj[key] = wrangleDateFormat(element[mapping[key]], date_format)
+					//console.log('df', date_format)
+					const formattedDate =  wrangleDateFormat(element[mapping[key]], date_format)
+					//console.log(key,formattedDate)
+					newObj[key] = formattedDate
 				} else {
 					console.log("didn't get a date format, I hope this is yyyy-mm-dd, or there might be issues", element[mapping[key]])
 					newObj[key] = element[mapping[key]]
@@ -111,11 +116,18 @@ const csvToExpense = async (
 				newObj[key] = element[mapping[key]];
 				newObj.category = runThroughLexer(element[mapping[key]],patternsObj);
 			}
+			if (key === "trx_id" && autocategorise) {
+				newObj[key] = element[mapping[key]];
+				
+			}
 			
 			else {
-				newObj[key] = element[mapping[key]];
+				//console.log('unknown key',key)
+				//newObj[key] = element[mapping[key]];
+				continue
 			}
 		}
+		//console.log(newObj)
 		return newObj;
 	});
 	return expenseArr;
